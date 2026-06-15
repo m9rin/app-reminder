@@ -12,6 +12,8 @@ API RESTful desenvolvida com NestJS para cadastro de usuarios, autenticacao com 
 - Passport
 - bcryptjs
 - class-validator
+- Helmet
+- @nestjs/throttler
 - Docker
 
 ## Funcionalidades
@@ -20,6 +22,7 @@ API RESTful desenvolvida com NestJS para cadastro de usuarios, autenticacao com 
 - Login com geracao de JWT
 - Hash de senha com bcryptjs
 - Rotas protegidas com JWT
+- Rate limiting nas rotas de autenticacao
 - Criacao de lembretes
 - Listagem de lembretes do usuario autenticado
 - Edicao de lembretes
@@ -48,20 +51,27 @@ Crie o arquivo `.env` com base no exemplo:
 cp .env.example .env
 ```
 
-Exemplo de `.env`:
+Preencha o `.env` com seus valores reais:
 
 ```env
+# ======= app =======
+NODE_ENV=development
+ALLOWED_ORIGINS=http://localhost:5173
 PORT=3000
 
-JWT_SECRET=dev-secret
+# ======= jwt =======
+JWT_SECRET=troque_por_um_valor_secreto_longo
 JWT_EXPIRES_IN=1d
 
+# ======= database =======
 DB_HOST=localhost
 DB_PORT=5432
 DB_USERNAME=postgres
-DB_PASSWORD=postgres
+DB_PASSWORD=troque_por_uma_senha_forte
 DB_DATABASE=app_reminder
 ```
+
+> O arquivo `.env` esta no `.gitignore` e nunca deve ser commitado. Use `.env.example` como referencia.
 
 ## Rodando Apenas o Banco com Docker
 
@@ -79,7 +89,7 @@ npm run start:dev
 
 A API ficara disponivel em:
 
-```txt
+```
 http://localhost:3000/api
 ```
 
@@ -91,7 +101,7 @@ Para subir a aplicacao completa em containers:
 docker compose up --build
 ```
 
-Nesse caso, dentro do Docker Compose, a API usa `DB_HOST=postgres`, pois `postgres` e o nome do servico do banco na rede interna do Docker.
+Nesse caso, o Docker Compose carrega as variaveis do `.env` automaticamente via `env_file`.
 
 ## Scripts
 
@@ -108,7 +118,7 @@ npm run test
 
 Todas as rotas usam o prefixo:
 
-```txt
+```
 /api
 ```
 
@@ -116,7 +126,7 @@ Todas as rotas usam o prefixo:
 
 ### Cadastro
 
-```http
+```
 POST /api/auth/register
 ```
 
@@ -132,7 +142,7 @@ Body:
 
 ### Login
 
-```http
+```
 POST /api/auth/login
 ```
 
@@ -153,9 +163,11 @@ Resposta:
 }
 ```
 
+> Rate limiting ativo: maximo de 5 tentativas por minuto nesta rota.
+
 ### Perfil
 
-```http
+```
 GET /api/auth/profile
 Authorization: Bearer <token>
 ```
@@ -173,13 +185,13 @@ Resposta:
 
 Todas as rotas de lembretes exigem autenticacao:
 
-```http
+```
 Authorization: Bearer <token>
 ```
 
 ### Criar Lembrete
 
-```http
+```
 POST /api/reminders
 ```
 
@@ -195,19 +207,19 @@ Body:
 
 ### Listar Lembretes
 
-```http
+```
 GET /api/reminders
 ```
 
 ### Marcar Como Concluido
 
-```http
+```
 PATCH /api/reminders/:id/complete
 ```
 
 ### Editar Lembrete
 
-```http
+```
 PUT /api/reminders/:id
 ```
 
@@ -223,7 +235,7 @@ Body:
 
 ### Deletar Lembrete
 
-```http
+```
 DELETE /api/reminders/:id
 ```
 
@@ -234,7 +246,7 @@ A API utiliza `class-validator` e `ValidationPipe` global para validar os dados 
 Exemplos de validacao:
 
 - `name` e obrigatorio no cadastro
-- `email` deve ser valido
+- `email` deve ser valido e unico
 - `password` deve ter no minimo 6 caracteres
 - `title` e obrigatorio ao criar lembrete
 - `dueDate` deve ser uma data valida
@@ -242,29 +254,29 @@ Exemplos de validacao:
 
 ## Seguranca
 
-- Senhas sao armazenadas com hash usando `bcryptjs`
-- O login retorna um JWT
-- Rotas privadas exigem token no header `Authorization`
+- Senhas armazenadas com hash via `bcryptjs`
+- Autenticacao via JWT com expiracao configuravel
+- Rotas privadas protegidas por `JwtAuthGuard`
 - Usuarios so podem acessar, editar ou remover os proprios lembretes
 - A senha nao e retornada nas respostas da API
+- Email com constraint `unique` no banco de dados
+- Rate limiting nas rotas de autenticacao via `@nestjs/throttler`
+- Headers HTTP de seguranca via `helmet`
+- CORS configurado para permitir apenas origens definidas em `ALLOWED_ORIGINS`
+- Variaveis de ambiente sensiveis isoladas no `.env` (fora do controle de versao)
+- `synchronize` do TypeORM desativado automaticamente em `NODE_ENV=production`
 
 ## Banco de Dados
 
 O projeto utiliza PostgreSQL com TypeORM.
 
-Durante o desenvolvimento, o TypeORM esta configurado com:
-
-```ts
-synchronize: true
-```
-
-Isso permite criar e atualizar tabelas automaticamente a partir das entities.
+O `synchronize` esta habilitado apenas em ambiente de desenvolvimento (`NODE_ENV=development`), criando e atualizando tabelas automaticamente a partir das entities.
 
 Em producao, o recomendado e substituir essa configuracao por migrations.
 
 ## Estrutura Principal
 
-```txt
+```
 src/
   auth/
     decorators/
@@ -294,4 +306,4 @@ src/
 
 ## Observacoes
 
-Este projeto foi desenvolvido como uma API de estudo e pratica com NestJS, aplicando conceitos como modulos, controllers, services, DTOs, guards, strategies, entities, repositories e autenticacao JWT.
+Este projeto foi desenvolvido como uma API de estudo e pratica com NestJS, aplicando conceitos como modulos, controllers, services, DTOs, guards, strategies, entities, repositories, autenticacao JWT e boas praticas de seguranca.
