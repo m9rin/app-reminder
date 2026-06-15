@@ -9,11 +9,11 @@ services:
       PORT: 3000
       JWT_SECRET: dev-secret
       JWT_EXPIRES_IN: 1d
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      DB_DATABASE: app_reminder
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}
     depends_on:
       - postgres
 

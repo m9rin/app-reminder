@@ -5,6 +5,7 @@ import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { AuthUser } from './types/auth-user.type';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -16,6 +17,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }

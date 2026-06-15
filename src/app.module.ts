@@ -21,7 +21,7 @@ import { RemindersModule } from './reminders/reminders.module';
         password: configService.getOrThrow<string>('DB_PASSWORD'),
         database: configService.getOrThrow<string>('DB_DATABASE'),
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: configService.get('NODE_ENV') !== 'production',
       }),
     }),
     UsersModule,
