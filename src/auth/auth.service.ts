@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -13,7 +17,9 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const userAlreadyExists =  await this.usersService.findByEmail(registerDto.email);
+    const userAlreadyExists = await this.usersService.findByEmail(
+      registerDto.email,
+    );
 
     if (userAlreadyExists) {
       throw new ConflictException('User with this email already exists');
@@ -21,7 +27,10 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
-    const user =  await this.usersService.create({ ...registerDto, password: hashedPassword });
+    const user = await this.usersService.create({
+      ...registerDto,
+      password: hashedPassword,
+    });
 
     return {
       message: 'User registered successfully',
@@ -40,7 +49,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
@@ -54,7 +66,7 @@ export class AuthService {
       message: 'Login successful',
       user: {
         id: user.id,
-        name: user.name,  
+        name: user.name,
         email: user.email,
         access_token: accessToken,
       },

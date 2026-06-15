@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
 import { ConfigService } from '@nestjs/config/dist/config.service';
 import { TypeOrmModule } from '@nestjs/typeorm/dist/typeorm.module';
+import { RemindersModule } from './reminders/reminders.module';
 
 @Module({
   imports: [
@@ -23,8 +24,9 @@ import { TypeOrmModule } from '@nestjs/typeorm/dist/typeorm.module';
         synchronize: true,
       }),
     }),
-    UsersModule, 
-    AuthModule
+    UsersModule,
+    AuthModule,
+    RemindersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
