@@ -1,4 +1,22 @@
 services:
+  api:
+    build: .
+    container_name: app_reminder_api
+    restart: always
+    ports:
+      - '3000:3000'
+    environment:
+      PORT: 3000
+      JWT_SECRET: dev-secret
+      JWT_EXPIRES_IN: 1d
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: app_reminder
+    depends_on:
+      - postgres
+
   postgres:
     image: postgres:16
     container_name: app_reminder_postgres
